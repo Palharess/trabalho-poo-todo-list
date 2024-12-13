@@ -1,0 +1,138 @@
+@startuml
+
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+
+namespace org.example {
+    class Main {
+        +main(String[] args) : void
+    }
+}
+
+namespace org.example.interfaceGrafica {
+    class MainFrame {
+        -taskManager : TaskManager
+        -history : TaskManagerHistory
+        -taskList : JList<String>
+        -listModel : DefaultListModel<String>
+        -currentFile : File
+        -factory : TaskFactory
+        -username : String
+
+        +MainFrame(TaskManager tm, TaskManagerHistory h, TaskFactory f, String username)
+        +onTasksChanged() : void
+        ..outros métodos omitidos..
+    }
+
+    MainFrame --> "uses" JFrame
+    MainFrame ..|> TaskManagerObserver
+    MainFrame --> TaskManager
+    MainFrame --> TaskManagerHistory
+    MainFrame --> TaskFactory
+    MainFrame --> Task
+    MainFrame --> Memento
+}
+
+namespace org.example.memento {
+    class Memento {
+        -state : List<Task>
+        +Memento(List<Task>)
+        +getState() : List<Task>
+    }
+
+    class TaskManagerHistory {
+        -undoStack : Stack<Memento>
+        -redoStack : Stack<Memento>
+        +saveState(Memento)
+        +undo() : Memento
+        +redo() : Memento
+    }
+
+    TaskManagerHistory --> Memento
+}
+
+namespace org.example.task {
+    interface Task {
+        +getTitle() : String
+        +setTitle(String)
+        +getDescription() : String
+        +setDescription(String)
+        +isDone() : boolean
+        +setDone(boolean)
+    }
+
+    class SimpleTask implements Task {
+        -title : String
+        -description : String
+        -done : boolean
+        +SimpleTask(String, String)
+        .. getters/setters ..
+    }
+
+    abstract class TaskFactory {
+        +createTask(String, String) : Task
+    }
+
+    class TaskFileHandler {
+        +saveTasks(List<Task>, File) : void
+        +loadTasks(File) : List<Task>
+    }
+
+    SimpleTask ..|> Task
+}
+
+namespace org.example.task.factory {
+    class SimpleTaskFactory extends TaskFactory {
+        +createTask(String, String) : Task
+    }
+
+    SimpleTaskFactory --> SimpleTask
+}
+
+namespace org.example.task.manager {
+    class TaskManager {
+        -tasks : List<Task>
+        -observers : List<TaskManagerObserver>
+        +addTask(Task)
+        +removeTask(Task)
+        +updateTask(Task,Task)
+        +getTasks() : List<Task>
+        +addObserver(TaskManagerObserver)
+        +removeObserver(TaskManagerObserver)
+        +createMemento() : Memento
+        +restoreMemento(Memento)
+        +refreshObservers()
+    }
+
+    interface TaskManagerObserver {
+        +onTasksChanged() : void
+    }
+
+    TaskManager --> Task
+    TaskManager --> Memento
+    TaskManager --> TaskManagerObserver
+    TaskManagerObserver <|.. MainFrame
+}
+
+namespace org.example.thread {
+    class AutoSaveThread extends Thread {
+        -taskManager : TaskManager
+        -file : File
+        -running : boolean
+        +AutoSaveThread(TaskManager, File)
+        +run() : void
+        +stopAutoSave() : void
+    }
+
+    AutoSaveThread --> TaskManager
+}
+
+' Relações globais
+org.example.Main --> org.example.interfaceGrafica.MainFrame
+org.example.Main --> org.example.thread.AutoSaveThread
+org.example.Main --> org.example.task.manager.TaskManager
+org.example.Main --> org.example.memento.TaskManagerHistory
+org.example.Main --> org.example.task.TaskFactory
+org.example.Main --> org.example.task.TaskFileHandler
+
+@enduml
