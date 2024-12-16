@@ -1,0 +1,32 @@
+@startuml
+
+actor User
+
+participant "MainFrame" as MF
+participant "TaskManager" as TM
+participant "Memento" as M
+participant "TaskManagerHistory" as TH
+participant "Task" as T
+
+User -> MF: Clica no botão "Remover Tarefa"
+MF -> MF: obtém índice da tarefa selecionada
+MF -> TM: createMemento()
+TM -> TM: cria cópia da lista atual de tarefas
+TM -> M: new Memento(cópia da lista atual)
+M --> TM: retorna Memento criado
+TM --> MF: retorna M (Memento)
+
+MF -> TH: saveState(M)
+TH -> TH: armazena M na pilha de undo
+
+MF -> TM: getTasks()
+TM --> MF: retorna lista atual de tarefas
+MF -> MF: seleciona a tarefa T com base no índice
+
+MF -> TM: removeTask(T)
+TM -> TM: remove T da lista interna
+TM -> TM: notifyObservers()
+TM --> MF: onTasksChanged()
+MF -> MF: Atualiza a lista exibida (removendo a tarefa da UI)
+
+@enduml

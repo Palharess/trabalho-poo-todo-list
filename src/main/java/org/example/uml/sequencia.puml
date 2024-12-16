@@ -1,0 +1,38 @@
+@startuml
+
+actor User
+
+participant "MainFrame" as MF
+participant "JOptionPane" as JP
+participant "TaskManager" as TM
+participant "Memento" as M
+participant "TaskManagerHistory" as TH
+participant "TaskFactory" as TF
+participant "Task" as T
+
+User -> MF: Clica no botão "Adicionar Tarefa"
+MF -> JP: showInputDialog("Título da tarefa:")
+JP --> MF: título
+MF -> JP: showInputDialog("Descrição da tarefa:")
+JP --> MF: descrição
+
+MF -> TM: createMemento()
+TM -> TM: cria nova lista de tarefas (cópia do estado atual)
+TM -> M: new Memento(cópia da lista de tarefas)
+M --> TM: retorna instância de Memento
+TM --> MF: retorna Memento (M)
+
+MF -> TH: saveState(M)
+TH -> TH: Armazena M na pilha de undo
+
+MF -> TF: createTask(título, descrição)
+TF -> TF: Cria nova instância de Task (ex: SimpleTask)
+TF --> MF: retorna Task (T)
+
+MF -> TM: addTask(T)
+TM -> TM: adiciona T na lista de tarefas
+TM -> TM: notifyObservers()
+TM --> MF: onTasksChanged()
+MF -> MF: Atualiza a lista exibida
+
+@enduml
