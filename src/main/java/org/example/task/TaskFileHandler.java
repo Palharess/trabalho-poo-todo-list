@@ -12,6 +12,9 @@ public class TaskFileHandler {
                 bw.newLine();
             }
         }
+        catch (IOException e) {
+            System.out.println("Não foi possivel salvar o arquivo: " + e.getMessage());
+        }
     }
 
     public static List<Task> loadTasks(File file) throws IOException {
@@ -29,6 +32,9 @@ public class TaskFileHandler {
                     tasks.add(t);
                 }
             }
+        }
+        catch (IOException e) {
+            System.out.println("Não foi possivel carregar o arquivo: " + e.getMessage());
         }
         return tasks;
     }
